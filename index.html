@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎵 音樂活動時間表</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(135deg, #fce7f3 0%, #e0f2fe 50%, #ddd6fe 100%);
+    min-height: 100vh;
+    padding: 16px;
+}
+.container { max-width: 600px; margin: 0 auto; }
+
+/* Header */
+.header {
+    text-align: center;
+    padding: 24px 16px 20px;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(139,92,246,0.35);
+}
+.header h1 { font-size: 1.7em; letter-spacing: 2px; }
+.header .subtitle { font-size: 0.95em; opacity: 0.9; margin-top: 6px; }
+.header .emoji-big { font-size: 2.5em; display: block; margin-bottom: 8px; }
+
+/* Section */
+.section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 1.15em; font-weight: 700;
+    color: #6d28d9;
+    margin: 22px 0 12px;
+    padding-left: 4px;
+}
+.section-title .icon { font-size: 1.3em; }
+
+/* Weekly card */
+.weekly-card {
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 14px 16px;
+    margin-bottom: 10px;
+    border-left: 5px solid #a78bfa;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: transform 0.2s;
+}
+.weekly-card:hover { transform: translateX(4px); }
+.wc-day { font-weight: 700; font-size: 0.85em; color: #7c3aed; min-width: 52px; }
+.wc-info { flex: 1; }
+.wc-activity { font-weight: 600; color: #1e293b; font-size: 0.95em; }
+.wc-time { font-size: 0.82em; color: #64748b; margin-top: 2px; }
+.wc-location {
+    background: linear-gradient(135deg, #f0abfc, #c084fc);
+    color: white; padding: 5px 12px; border-radius: 20px;
+    font-size: 0.78em; font-weight: 600; white-space: nowrap;
+}
+
+/* Timeline */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+    content: '';
+    position: absolute; left: 9px; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(to bottom, #f472b6, #8b5cf6, #60a5fa);
+    border-radius: 3px;
+}
+
+.event {
+    position: relative;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.event:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+.event::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2.5px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.event.pending::before { background: #f59e0b; }
+.event.today-event::before { background: #ec4899; animation: pulse 1.5s infinite; }
+.event.performance::before { background: #ef4444; }
+.event.concert::before { background: #8b5cf6; }
+.event.competition::before { background: #ec4899; animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(236,72,153,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(236,72,153,0.1); }
+}
+
+.date-badge {
+    display: inline-block;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 0.75em; font-weight: 700;
+    margin-right: 6px;
+}
+.badge-april { background: #fce7f3; color: #be185d; }
+.badge-may { background: #e0e7ff; color: #4338ca; }
+
+.event-header { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.event-date { font-size: 0.84em; font-weight: 700; color: #6366f1; }
+.event-weekday { font-size: 0.8em; color: #94a3b8; }
+
+.event-name { font-size: 1.02em; font-weight: 700; color: #1e293b; margin-bottom: 4px; line-height: 1.4; }
+.event-name .music-icon { margin-right: 4px; }
+
+.event-details { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.time-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #eff6ff; color: #1d4ed8;
+    padding: 3px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 600;
+}
+.location-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fef3c7; color: #b45309;
+    padding: 3px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 600;
+}
+.status-tag {
+    padding: 3px 10px; border-radius: 12px; font-size: 0.74em; font-weight: 700;
+}
+.status-wait { background: #fef3c7; color: #b45309; }
+.status-new { background: #fce7f3; color: #be185d; }
+
+/* Performance special style */
+.event.performance, .event.concert {
+    background: linear-gradient(135deg, #fff7ed, #fef3c7, #fce7f3);
+    border: 2px solid #fbbf24;
+}
+.event.performance .event-name, .event.concert .event-name {
+    font-size: 1.08em; color: #b45309;
+}
+
+/* Competition special style */
+.event.competition {
+    background: linear-gradient(135deg, #fce7f3, #fdf2f8, #fff7ed);
+    border: 2px solid #ec4899;
+}
+.event.competition .event-name {
+    font-size: 1.08em; color: #be185d;
+}
+
+/* Month separator */
+.month-sep {
+    text-align: center; margin: 24px 0 16px;
+    position: relative;
+}
+.month-sep span {
+    display: inline-block;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+    color: white; padding: 6px 22px; border-radius: 20px;
+    font-size: 0.9em; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+}
+
+/* Legend */
+.legend {
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+    border-radius: 14px; padding: 14px 16px;
+    margin: 22px 0;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    font-size: 0.78em;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 18px; font-size: 0.82em; color: #64748b;
+}
+.footer .heart { color: #ec4899; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ====== HEADER ====== -->
+<div class="header">
+    <span class="emoji-big">🎹🥁🎻</span>
+    <h1>音樂活動時間表</h1>
+    <p class="subtitle">2026年4月 - 5月 | 排練 · 統排 · 表演 · 比賽</p>
+</div>
+
+<!-- ====== LEGEND ====== -->
+<div class="legend">
+    <div class="legend-item"><div class="dot" style="background:#f59e0b"></div>待做</div>
+    <div class="legend-item"><div class="dot" style="background:#ec4899"></div>新加入 / 閃爍</div>
+    <div class="legend-item"><div class="dot" style="background:#ef4444"></div>正式演出</div>
+    <div class="legend-item"><div class="dot" style="background:#8b5cf6"></div>音樂會</div>
+    <div class="legend-item"><div class="dot" style="background:#ec4899;animation:pulse 1.5s infinite"></div>比賽</div>
+</div>
+
+<!-- ====== 每週活動 ====== -->
+<div class="section-title"><span class="icon">📅</span>每週固定活動</div>
+
+<div class="weekly-card">
+    <div class="wc-day">每週二</div>
+    <div class="wc-info">
+        <div class="wc-activity">🎹 彈鋼琴</div>
+        <div class="wc-time">下午 5:00</div>
+    </div>
+    <div class="wc-location">協會</div>
+</div>
+
+<div class="weekly-card">
+    <div class="wc-day">每週二</div>
+    <div class="wc-info">
+        <div class="wc-activity">🥁 學鼓</div>
+        <div class="wc-time">晚上 7:45</div>
+    </div>
+    <div class="wc-location">雅思</div>
+</div>
+
+<div class="weekly-card">
+    <div class="wc-day">每週日</div>
+    <div class="wc-info">
+        <div class="wc-activity">🎵 協會合奏</div>
+        <div class="wc-time">下午 2:00 - 4:00</div>
+    </div>
+    <div class="wc-location">協會</div>
+</div>
+
+<!-- ====== 4月份 ====== -->
+<div class="section-title"><span class="icon">🌸</span>4月活動時間線</div>
+
+<div class="timeline">
+
+    <!-- 4/25 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-april">4月25日</span>
+            <span class="event-date">星期六</span>
+        </div>
+        <div class="event-name">🎷 爵士樂表演</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 上午 10:00</span>
+            <span class="location-tag">🎪 觀樂怡</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 4/26 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-april">4月26日</span>
+            <span class="event-date">星期日</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 10:00 - 11:40</span>
+            <span class="location-tag">🏢 路環辦公大樓</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 4/26 銀河音樂會 -->
+    <div class="event concert">
+        <div class="event-header">
+            <span class="date-badge badge-april">4月26日</span>
+            <span class="event-date">星期日</span>
+        </div>
+        <div class="event-name">🎵 去銀河酒店聽音樂會</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 8:00</span>
+            <span class="location-tag">🎪 銀河酒店</span>
+        </div>
+    </div>
+
+</div><!-- end timeline -->
+
+<!-- ====== 月分隔 ====== -->
+<div class="month-sep"><span>🌺 2026 年 5 月 🌺</span></div>
+
+<div class="timeline">
+
+    <!-- 5/3 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月3日</span>
+            <span class="event-date">星期日</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 10:00 - 11:40</span>
+            <span class="location-tag">🏢 路環辦公大樓</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/10 樂團排練 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月10日</span>
+            <span class="event-date">星期日</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 10:00 - 11:40</span>
+            <span class="location-tag">🏢 路環辦公大樓</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/10 鋼琴比賽!! 新! -->
+    <div class="event competition">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月10日</span>
+            <span class="event-date">星期日</span>
+        </div>
+        <div class="event-name">🎹🏆 鋼琴比賽！！</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 11:35 - 14:00</span>
+            <span class="location-tag">🏛️ 嘉模會堂</span>
+            <span class="status-tag status-new">🆕 新增</span>
+        </div>
+    </div>
+
+    <!-- 5/11 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月11日</span>
+            <span class="event-date">星期一</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 7:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/12 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月12日</span>
+            <span class="event-date">星期二</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 7:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/13 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月13日</span>
+            <span class="event-date">星期三</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 7:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/14 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月14日</span>
+            <span class="event-date">星期四</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 7:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/15 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月15日</span>
+            <span class="event-date">星期五</span>
+        </div>
+        <div class="event-name">📍 樂團排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 7:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/15 提醒 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月15日</span>
+            <span class="event-date">星期五</span>
+        </div>
+        <div class="event-name">⚠️ 提醒：記得帶表演服！</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 早上 8:00</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/16 總排練 -->
+    <div class="event pending">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月16日</span>
+            <span class="event-date">星期六</span>
+        </div>
+        <div class="event-name">📍 樂團總排練</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 下午 3:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+            <span class="status-tag status-wait">⬚ 待做</span>
+        </div>
+    </div>
+
+    <!-- 5/16 正式演出!! -->
+    <div class="event concert">
+        <div class="event-header">
+            <span class="date-badge badge-may">5月16日</span>
+            <span class="event-date">星期六</span>
+        </div>
+        <div class="event-name">🎵🎼 樂團音樂會正式演出！！</div>
+        <div class="event-details">
+            <span class="time-tag">🕤 晚上 8:00</span>
+            <span class="location-tag">🏫 澳門大學</span>
+        </div>
+    </div>
+
+</div><!-- end timeline -->
+
+<!-- ====== FOOTER ====== -->
+<div class="footer">
+    <p><span class="heart">❤️</span> 加油！你一定得嘅！ <span class="heart">❤️</span></p>
+    <p style="margin-top:6px;font-size:0.78em;color:#94a3b8">最後更新：2026年4月21日</p>
+</div>
+
+</div>
+</body>
+</html>
